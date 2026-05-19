@@ -2,11 +2,17 @@ import express from "express";
 import 'dotenv/config'
 import cors from 'cors';
 import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./lib/db.js";
 import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import aiRouter from "./routes/aiRoutes.js";
 import { Server } from "socket.io";
+
+// __dirname fix for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Creating Express app and HTTP server
 
@@ -54,6 +60,14 @@ app.use("/api/status",(req,res)=>res.send("Server is live"))
 app.use("/api/auth",userRouter)
 app.use("/api/messages",messageRouter)
 app.use("/api/ai",aiRouter)
+
+
+// Serve React frontend
+app.use(express.static(path.join(__dirname, "../../client/dist")));
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist", "index.html"));
+});
+
 
 //connect to MongoDb
 await connectDB();
